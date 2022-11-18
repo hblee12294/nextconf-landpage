@@ -1,18 +1,12 @@
 import { Canvas } from '@react-three/fiber'
 
-import './App.css'
-import Box from './Box'
+import Scene from './components/Scene'
 
 function App() {
   return (
-    <Canvas>
-      <color attach="background" args={['#fff']} />
-      <ambientLight intensity={0.5} />
-      <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
-      <pointLight position={[-10, -10, -10]} />
-
-      <Box position={[-1.2, 0, 0]} />
-      <Box position={[1.2, 0, 0]} />
+    <Canvas orthographic camera={{ zoom: 100 }}>
+      <color attach="background" args={['#000']} />
+      <Scene />
     </Canvas>
   )
 }
