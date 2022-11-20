@@ -4,10 +4,10 @@ import { Vector3, Raycaster, Group, Intersection, Mesh, Object3D } from 'three'
 
 interface ReflectProps extends GroupProps {
   children: ReactNode
-  start: [number, number, number]
-  end: [number, number, number]
-  bounce: number
-  far: number
+  start?: [number, number, number]
+  end?: [number, number, number]
+  bounce?: number
+  far?: number
 }
 
 export interface ExtMesh extends Mesh {
@@ -55,21 +55,22 @@ function createEvent(api: Api, hit: Hit, intersect: ExtIntersection, intersects:
 
 type CreateEventReturnType = ReturnType<typeof createEvent>
 
+const vStart = new Vector3()
+const vEnd = new Vector3()
+const vDir = new Vector3()
+const vPos = new Vector3()
+
+let intersect: ExtIntersection | null = null
+let intersects: ExtIntersection[] = []
+
 export const Reflect = forwardRef<Api, ReflectProps>(
   ({ children, start: _start = [0, 0, 0], end: _end = [0, 0, 0], bounce = 10, far = 100, ...props }, fRef) => {
     bounce = (bounce || 1) + 1
 
     const scene = useRef<Group>(null)
-    const vStart = new Vector3()
-    const vEnd = new Vector3()
-    const vDir = new Vector3()
-    const vPos = new Vector3()
 
-    let intersect: ExtIntersection | null = null
-    let intersects: ExtIntersection[] = []
-
-    const api: Api = useMemo<Api>(
-      () => ({
+    const api: Api = useMemo<Api>(() => {
+      return {
         number: 0,
         objects: [],
         hits: new Map(),
@@ -173,11 +174,12 @@ export const Reflect = forwardRef<Api, ReflectProps>(
           }
           return Math.max(2, api.number)
         },
-      }),
-      [bounce, far],
-    )
+      }
+    }, [bounce, far])
 
-    useLayoutEffect(() => void api.setRay(_start, _end), [..._start, ..._end])
+    useLayoutEffect(() => {
+      api.setRay(_start, _end)
+    }, [..._start, ..._end, api])
 
     useImperativeHandle(fRef, () => api, [api])
 

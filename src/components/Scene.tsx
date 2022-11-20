@@ -48,6 +48,7 @@ function Scene() {
       // Convert rotation to euler z
       obj.rotation.set(0, 0, Math.atan2(n.y, n.x))
       obj.updateMatrix()
+
       streaks.current.setMatrixAt(i, obj.matrix)
     }
 
@@ -65,6 +66,7 @@ function Scene() {
       obj.scale.setScalar(0.75)
       obj.rotation.set(0, 0, 0)
       obj.updateMatrix()
+
       glow.current.setMatrixAt(i, obj.matrix)
     }
 
