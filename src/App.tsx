@@ -1,6 +1,7 @@
 import { Canvas } from '@react-three/fiber'
 
-import Scene from './components/Scene'
+// import Scene from './components/Scene'
+import Scene from './components/RainbowScene'
 
 function App() {
   return (

@@ -67,7 +67,7 @@ export const Reflect = forwardRef<Api, ReflectProps>(
   ({ children, start: _start = [0, 0, 0], end: _end = [0, 0, 0], bounce = 10, far = 100, ...props }, fRef) => {
     bounce = (bounce || 1) + 1
 
-    const scene = useRef<Group>(null)
+    const scene = useRef<Group>(null!)
 
     const api: Api = useMemo<Api>(() => {
       return {
@@ -185,8 +185,6 @@ export const Reflect = forwardRef<Api, ReflectProps>(
 
     useLayoutEffect(() => {
       // Collect all objects that fulfill the criteria.
-      if (!scene.current) return
-
       api.objects = []
       scene.current.traverse((object) => {
         const obj = object as ExtMesh
