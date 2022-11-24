@@ -1,16 +1,21 @@
-import { useRef } from 'react'
+import { forwardRef, useRef, useImperativeHandle } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useTexture } from '@react-three/drei'
 import { Object3D, Vector3, AdditiveBlending, DynamicDrawUsage, InstancedMesh } from 'three'
 
-import { Reflect, Api } from './Reflect'
-import Block from './Block'
-import Triangle from './Triangle'
+import { Reflect, ReflectProps, ReflectAPI } from './Reflect'
 
-function Scene() {
+export interface BeamProps extends Omit<ReflectProps, 'ref'> {
+  stride?: number
+  width?: number
+}
+
+export type BeamAPI = ReflectAPI
+
+export const Beam = forwardRef<BeamAPI, BeamProps>(({ children, position, stride = 4, width = 8, ...props }, fRef) => {
   const streaks = useRef<InstancedMesh>(null!)
   const glow = useRef<InstancedMesh>(null!)
-  const reflect = useRef<Api>(null!)
+  const reflect = useRef<ReflectAPI>(null!)
   const [streakTexture, glowTexture] = useTexture([
     'https://assets.vercel.com/image/upload/contentful/image/e5382hct74si/1LRW0uiGloWqJcY0WOxREA/61737e55cab34a414d746acb9d0a9400/download.png',
     'https://assets.vercel.com/image/upload/contentful/image/e5382hct74si/2NKOrPD3iq75po1v0AA6h2/40f1a3d6bc175c89fb0934c8c294254a/download.jpeg',
@@ -20,19 +25,20 @@ function Scene() {
   const f = new Vector3()
   const t = new Vector3()
   const n = new Vector3()
+  const config = {
+    transparent: true,
+    blending: AdditiveBlending,
+    depthWrite: false,
+    toneMapped: false,
+  }
 
   let i = 0
   let range = 0
 
-  useFrame((state) => {
-    reflect.current.setRay([
-      (state.pointer.x * state.viewport.width) / 2,
-      (state.pointer.y * state.viewport.height) / 2,
-      0,
-    ])
-    range = reflect.current.update()
+  useFrame(() => {
+    range = reflect.current.update() - 1
 
-    for (i = 0; i < range - 1; i++) {
+    for (i = 0; i < range; i++) {
       // Position 1
       f.fromArray(reflect.current.positions, i * 3)
       // Position 2
@@ -42,7 +48,7 @@ function Scene() {
       // Calculate mid-point
       obj.position.addVectors(f, t).divideScalar(2)
       // Stretch by using the distance
-      obj.scale.set(t.distanceTo(f) * 3, 6, 1)
+      obj.scale.set(t.distanceTo(f) * stride, width, 1)
       // Convert rotation to euler z
       obj.rotation.set(0, 0, Math.atan2(n.y, n.x))
       obj.updateMatrix()
@@ -50,8 +56,8 @@ function Scene() {
       streaks.current.setMatrixAt(i, obj.matrix)
     }
 
-    streaks.current.count = range - 1
-    streaks.current.instanceMatrix.updateRange.count = (range - 1) * 16
+    streaks.current.count = range
+    streaks.current.instanceMatrix.updateRange.count = range * 16
     streaks.current.instanceMatrix.needsUpdate = true
 
     // First glow isn't shown.
@@ -73,40 +79,26 @@ function Scene() {
     glow.current.instanceMatrix.needsUpdate = true
   })
 
+  useImperativeHandle(fRef, () => reflect.current, [])
+
   return (
-    <>
-      <Reflect ref={reflect} far={10} bounce={10} start={[10, 5, 0]} end={[0, 0, 0]}>
+    <group>
+      <Reflect position={position} ref={reflect} {...props}>
         {/* Any object in here will receive ray events */}
-        <Block scale={0.5} position={[0.25, -0.15, 0]} />
-        <Block scale={0.5} position={[-1.1, 0.9, 0]} rotation={[0, 0, -1]} />
-        <Triangle scale={0.4} position={[-1.1, -1.2, 0]} rotation={[Math.PI / 2, Math.PI, 0]} />
+        {children}
       </Reflect>
       {/* Draw stretched pngs to represent the reflect positions. */}
       <instancedMesh ref={streaks} args={[undefined, undefined, 100]} instanceMatrix-usage={DynamicDrawUsage}>
         <planeGeometry />
-        <meshBasicMaterial
-          map={streakTexture}
-          transparent
-          opacity={1}
-          blending={AdditiveBlending}
-          depthWrite={false}
-          toneMapped={false}
-        />
+        <meshBasicMaterial map={streakTexture} opacity={1.5} {...config} />
       </instancedMesh>
       {/* Draw glowing dots on the contact points. */}
       <instancedMesh ref={glow} args={[undefined, undefined, 100]} instanceMatrix-usage={DynamicDrawUsage}>
         <planeGeometry />
-        <meshBasicMaterial
-          map={glowTexture}
-          transparent
-          opacity={1}
-          blending={AdditiveBlending}
-          depthWrite={false}
-          toneMapped={false}
-        />
+        <meshBasicMaterial map={glowTexture} {...config} />
       </instancedMesh>
-    </>
+    </group>
   )
-}
+})
 
-export default Scene
+Beam.displayName = 'Beam'

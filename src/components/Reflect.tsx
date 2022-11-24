@@ -2,7 +2,7 @@ import { forwardRef, useRef, useMemo, useImperativeHandle, useLayoutEffect, Reac
 import { GroupProps, invalidate } from '@react-three/fiber'
 import { Vector3, Raycaster, Group, Intersection, Mesh, Object3D } from 'three'
 
-interface ReflectProps extends GroupProps {
+export interface ReflectProps extends GroupProps {
   children: ReactNode
   start?: [number, number, number]
   end?: [number, number, number]
@@ -27,7 +27,7 @@ interface Hit {
   stopped: boolean
 }
 
-export interface Api {
+export interface ReflectAPI {
   number: number
   objects: Object3D[]
   hits: Map<string, Hit>
@@ -39,7 +39,7 @@ export interface Api {
   update: () => number
 }
 
-function createEvent(api: Api, hit: Hit, intersect: ExtIntersection, intersects: Intersection[]) {
+function createEvent(api: ReflectAPI, hit: Hit, intersect: ExtIntersection, intersects: Intersection[]) {
   return {
     api,
     object: intersect.object,
@@ -53,7 +53,7 @@ function createEvent(api: Api, hit: Hit, intersect: ExtIntersection, intersects:
   }
 }
 
-type CreateEventReturnType = ReturnType<typeof createEvent>
+export type CreateEventReturnType = ReturnType<typeof createEvent>
 
 const vStart = new Vector3()
 const vEnd = new Vector3()
@@ -63,13 +63,13 @@ const vPos = new Vector3()
 let intersect: ExtIntersection | null = null
 let intersects: ExtIntersection[] = []
 
-export const Reflect = forwardRef<Api, ReflectProps>(
+export const Reflect = forwardRef<ReflectAPI, ReflectProps>(
   ({ children, start: _start = [0, 0, 0], end: _end = [0, 0, 0], bounce = 10, far = 100, ...props }, fRef) => {
     bounce = (bounce || 1) + 1
 
     const scene = useRef<Group>(null!)
 
-    const api: Api = useMemo<Api>(() => {
+    const api: ReflectAPI = useMemo<ReflectAPI>(() => {
       return {
         number: 0,
         objects: [],
