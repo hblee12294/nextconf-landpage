@@ -11,10 +11,7 @@ export interface PrismProps extends GroupProps {
 }
 
 export function Prism({ onRayOver, onRayOut, onRayMove, ...props }: PrismProps) {
-  const g = useLoader(
-    GLTFLoader,
-    'https://uploads.codesandbox.io/uploads/user/b3e56831-8b98-4fee-b941-0e27f39883ab/xxpI-prism.glb',
-  )
+  const g = useLoader(GLTFLoader, 'resources/xxpI-prism.glb')
 
   const prismProps = useMemo(() => {
     return { onRayOver, onRayOut, onRayMove } as MeshProps

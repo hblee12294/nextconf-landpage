@@ -16,10 +16,7 @@ export const Beam = forwardRef<BeamAPI, BeamProps>(({ children, position, stride
   const streaks = useRef<InstancedMesh>(null!)
   const glow = useRef<InstancedMesh>(null!)
   const reflect = useRef<ReflectAPI>(null!)
-  const [streakTexture, glowTexture] = useTexture([
-    'https://assets.vercel.com/image/upload/contentful/image/e5382hct74si/1LRW0uiGloWqJcY0WOxREA/61737e55cab34a414d746acb9d0a9400/download.png',
-    'https://assets.vercel.com/image/upload/contentful/image/e5382hct74si/2NKOrPD3iq75po1v0AA6h2/40f1a3d6bc175c89fb0934c8c294254a/download.jpeg',
-  ])
+  const [streakTexture, glowTexture] = useTexture(['resources/download.png', 'resources/download.jpeg'])
 
   const obj = new Object3D()
   const f = new Vector3()
