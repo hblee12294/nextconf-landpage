@@ -3,8 +3,7 @@ import { Bloom, EffectComposer, LUT } from '@react-three/postprocessing'
 import { LUTCubeLoader } from 'postprocessing'
 import { Texture } from 'three'
 
-// import Scene from './components/Scene'
-import Scene from './components/RainbowScene'
+import Scene from './components/Scene'
 
 function App() {
   const texture: Texture = useLoader(

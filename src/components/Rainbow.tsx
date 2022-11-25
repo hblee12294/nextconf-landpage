@@ -3,7 +3,7 @@ import { extend, useFrame, useThree, Node, MeshProps } from '@react-three/fiber'
 import { shaderMaterial } from '@react-three/drei'
 import { Mesh } from 'three'
 
-interface RainbowUniforms {
+export interface RainbowUniforms {
   time: number
   speed: number
   fade: number
@@ -13,7 +13,7 @@ interface RainbowUniforms {
   ratio: number
 }
 
-const RainbowMaterial = shaderMaterial(
+export const RainbowMaterial = shaderMaterial(
   {
     time: 0,
     speed: 1,
@@ -114,6 +114,8 @@ const RainbowMaterial = shaderMaterial(
 )
 
 extend({ RainbowMaterial })
+
+// export type RainbowMaterial = Omit<typeof rainbowMaterial, 'prototype' | 'key'> & RainbowUniforms
 
 declare module '@react-three/fiber' {
   interface ThreeElements {

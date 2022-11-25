@@ -1,34 +1,51 @@
-import { useRef, useState } from 'react'
-import { MeshProps, useFrame } from '@react-three/fiber'
-import { Mesh } from 'three'
+import { Shape, BoxGeometry, ExtrudeGeometry, Group, Mesh, MeshStandardMaterial } from 'three'
+import { forwardRef, useRef, useState, useMemo } from 'react'
+import { useFrame, MeshProps, GroupProps } from '@react-three/fiber'
 
-function Box(props: MeshProps) {
-  const ref = useRef<Mesh>(null)
+import { lerpC } from '../utils'
 
-  // Hold state for hovered and clicked events.
+const w = 1
+const h = 1
+const r = 0.1
+const depth = 1
+const s = new Shape()
+s.moveTo(-w / 2, -h / 2 + r)
+s.lineTo(-w / 2, h / 2 - r)
+s.absarc(-w / 2 + r, h / 2 - r, r, 1 * Math.PI, 0.5 * Math.PI, true)
+s.lineTo(w / 2 - r, h / 2)
+s.absarc(w / 2 - r, h / 2 - r, r, 0.5 * Math.PI, 0 * Math.PI, true)
+s.lineTo(w / 2, -h / 2 + r)
+s.absarc(w / 2 - r, -h / 2 + r, r, 2 * Math.PI, 1.5 * Math.PI, true)
+s.lineTo(-w / 2 + r, -h / 2)
+s.absarc(-w / 2 + r, -h / 2 + r, r, 1.5 * Math.PI, 1 * Math.PI, true)
+
+const boxGeometry = new BoxGeometry()
+const roundedBoxGeometry = new ExtrudeGeometry(s, { depth: 1, bevelEnabled: false })
+roundedBoxGeometry.translate(0, 0, -depth / 2)
+roundedBoxGeometry.computeVertexNormals()
+
+export type BoxProps = GroupProps
+
+export const Box = forwardRef<Group, GroupProps>((props, ref) => {
   const [hovered, hover] = useState(false)
-  const [clicked, click] = useState(false)
+  const inner = useRef<Mesh>(null!)
 
-  // Subscribe this component to the render-loop and rotate the mesh every frame.
-  useFrame((state, delta) => {
-    if (ref.current) {
-      ref.current.rotation.x += delta
-    }
+  useFrame(() => {
+    lerpC((inner.current.material as MeshStandardMaterial).emissive, hovered ? 'white' : '#454545', 0.1)
   })
 
-  return (
-    <mesh
-      {...props}
-      ref={ref}
-      scale={clicked ? 1.5 : 1}
-      onClick={() => click(!clicked)}
-      onPointerOver={() => hover(true)}
-      onPointerOut={() => hover(false)}
-    >
-      <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color={hovered ? 'hotpink' : 'orange'} />
-    </mesh>
-  )
-}
+  const boxProps = useMemo(() => {
+    return { onRayOver: () => hover(true), onRayOut: () => hover(false) } as MeshProps
+  }, [])
 
-export default Box
+  return (
+    <group scale={0.5} ref={ref} {...props}>
+      <mesh visible={false} geometry={boxGeometry} {...boxProps} />
+      <mesh ref={inner} geometry={roundedBoxGeometry}>
+        <meshStandardMaterial color="#333" toneMapped={false} emissiveIntensity={2} />
+      </mesh>
+    </group>
+  )
+})
+
+Box.displayName = 'Box'
